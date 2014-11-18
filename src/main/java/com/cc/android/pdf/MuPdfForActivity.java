@@ -1,10 +1,14 @@
 package com.cc.android.pdf;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
@@ -13,12 +17,17 @@ import android.widget.Button;
 import com.artifex.mupdfdemo.MuPDFActivity;
 import com.goodow.realtime.channel.Bus;
 import com.goodow.realtime.json.Json;
+import com.goodow.realtime.json.JsonObject;
 import com.google.inject.Inject;
+import com.krxkid.android.pdf.R;
 
 /**
  * Created by dpw on 7/10/14.
  */
 public class MuPdfForActivity extends MuPDFActivity implements View.OnClickListener {
+  public static final String AUTHORITY = "com.krxkid.android.provider.play";
+  public static final String KEY_PLAY_DATA = "playData";
+  public static final String INSERT = "/insert";
 
   @Inject
   private Bus bus;
@@ -80,6 +89,7 @@ public class MuPdfForActivity extends MuPDFActivity implements View.OnClickListe
   public void onClick(View v) {
     if (v == back) {
 //      saveOnDatabases();
+      saveData();
       this.finish();
       finishMuPdfCore();
     }
@@ -110,6 +120,7 @@ public class MuPdfForActivity extends MuPDFActivity implements View.OnClickListe
   public boolean onKeyDown(int keyCode, KeyEvent event) {
     if (keyCode == KeyEvent.KEYCODE_BACK) {
 //      saveOnDatabases();
+      saveData();
       finish();
       finishMuPdfCore();
     }
@@ -133,5 +144,20 @@ public class MuPdfForActivity extends MuPDFActivity implements View.OnClickListe
 //      }
 //    }
 //  }
+
+  protected void saveData(){
+    String fileName = sharedPreferences.getString("tmpFileName", "");
+    long openTime = sharedPreferences.getLong("tmpOpenTime", -1);
+    // 播放时间，小于5s，忽略
+    long lastTime = SystemClock.uptimeMillis() - sharedPreferences.getLong("tmpSystemLast", -1);
+    // 将数据插入
+    if (lastTime > 5000 & !TextUtils.isEmpty(fileName)){
+      System.out.println("-------------");
+      ContentValues values = new ContentValues();
+      JsonObject jsonObject = Json.createObject().set("FILE_NAME", fileName).set("OPEN_TIME", openTime).set("LAST_TIME", lastTime);
+      values.put(KEY_PLAY_DATA, jsonObject.toJsonString());
+      this.getContentResolver().insert(Uri.parse("content://" + AUTHORITY + INSERT), values);
+    }
+  }
 
 }

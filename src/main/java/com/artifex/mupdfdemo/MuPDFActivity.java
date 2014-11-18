@@ -13,6 +13,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
@@ -46,6 +47,7 @@ class ThreadPerTaskExecutor implements Executor {
 }
 
 public class MuPDFActivity extends RoboActivity implements FilePicker.FilePickerSupport {
+
   /* The core rendering instance */
   enum TopBarMode {
     Main, Search, Annot, Delete, More, Accept
@@ -98,6 +100,8 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
   private Bus bus;
   private Registration controlHandler;
   private float currentScale = 1.0f;
+
+  public SharedPreferences sharedPreferences;
 
   public void createAlertWaiter() {
     mAlertsActive = true;
@@ -257,7 +261,7 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-
+    sharedPreferences = this.getSharedPreferences("config", Context.MODE_PRIVATE);
     mAlertBuilder = new AlertDialog.Builder(this);
 
     if (core == null) {
@@ -272,6 +276,15 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
       byte buffer[] = null;
       if (Intent.ACTION_VIEW.equals(intent.getAction())) {
         Uri uri = intent.getData();
+        Bundle extras = intent.getExtras();
+        if (extras != null && extras.containsKey("file_id")) {
+          String file_id = extras.getString("file_id");
+          SharedPreferences.Editor editor = sharedPreferences.edit();
+          editor.putString("tmpFileName", file_id);
+          editor.putLong("tmpOpenTime", System.currentTimeMillis());
+          editor.putLong("tmpSystemLast", SystemClock.uptimeMillis());
+          editor.commit();
+        }
         System.out.println("URI to open is: " + uri);
         if (uri.toString().startsWith("content://")) {
           String reason = null;
@@ -286,7 +299,6 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
             reason = e.toString();
           } catch (Exception e) {
             System.out.println("Exception reading from stream: " + e);
-
             // Handle view requests from the Transformer Prime's file manager
             // Hopefully other file managers will use this same scheme, if not
             // using explicit paths.
@@ -702,13 +714,13 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
         //        mDocView.setScaleX(currentScaleX);
         //        mDocView.setScaleY(currentScaleY);
         mDocView.setmScale(currentScaleX);
-//        Instrumentation inst = new Instrumentation();
-//        inst.sendPointerSync(MotionEvent
-//            .obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN,
-//                400, 400, 0));
-//        inst.sendPointerSync(MotionEvent
-//            .obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP,
-//                400, 400, 0));
+        //        Instrumentation inst = new Instrumentation();
+        //        inst.sendPointerSync(MotionEvent
+        //            .obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_DOWN,
+        //                400, 400, 0));
+        //        inst.sendPointerSync(MotionEvent
+        //            .obtain(SystemClock.uptimeMillis(), SystemClock.uptimeMillis(), MotionEvent.ACTION_UP,
+        //                400, 400, 0));
 
       }
     } else if (body.has("fit")) {
@@ -1251,8 +1263,8 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
     }
   }
 
-  public void finishMuPdfCore(){
-    if (core != null){
+  public void finishMuPdfCore() {
+    if (core != null) {
       destroyAlertWaiter();
       core.stopAlerts();
       core.onDestroy();
@@ -1279,6 +1291,5 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
     intent.setAction(ChoosePDFActivity.PICK_KEY_FILE);
     startActivityForResult(intent, FILEPICK_REQUEST);
   }
-
 
 }
