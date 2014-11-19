@@ -22,7 +22,7 @@
     <string name="string_pdf_min">缩小</string>
 
     <!-- mupdf -->
-    <string name="app_name">MuPDF</string>
+    <string name="app_name">krx-pdf</string>
     <string name="version">1.5 (git build)</string>
     <string name="no_media_warning">Storage media not present</string>
     <string name="no_media_hint">Sharing the storage media with a PC can make it inaccessible</string>

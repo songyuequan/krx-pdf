@@ -12,7 +12,7 @@ import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.Scroller;
-import com.cc.android.pdf.R;
+import com.krxkid.android.pdf.R;
 
 import java.util.LinkedList;
 import java.util.NoSuchElementException;

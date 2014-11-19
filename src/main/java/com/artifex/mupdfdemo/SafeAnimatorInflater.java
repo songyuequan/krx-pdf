@@ -5,7 +5,7 @@ import android.animation.AnimatorInflater;
 import android.animation.AnimatorSet;
 import android.app.Activity;
 import android.view.View;
-import com.cc.android.pdf.R;
+import com.krxkid.android.pdf.R;
 
 public class SafeAnimatorInflater
 {

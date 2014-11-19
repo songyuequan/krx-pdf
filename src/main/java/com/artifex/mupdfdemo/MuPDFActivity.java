@@ -27,7 +27,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.*;
 import com.artifex.mupdfdemo.ReaderView.ViewMapper;
 import com.cc.android.pdf.Constant;
-import com.cc.android.pdf.R;
 import com.cc.android.pdf.ScreenTools;
 import com.goodow.realtime.channel.Bus;
 import com.goodow.realtime.channel.Message;
@@ -35,6 +34,7 @@ import com.goodow.realtime.channel.MessageHandler;
 import com.goodow.realtime.core.Registration;
 import com.goodow.realtime.json.JsonObject;
 import com.google.inject.Inject;
+import com.krxkid.android.pdf.R;
 import roboguice.activity.RoboActivity;
 
 import java.io.InputStream;
@@ -255,6 +255,117 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
     return core;
   }
 
+  @Override
+  protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+    sharedPreferences = this.getSharedPreferences("config", Context.MODE_PRIVATE);
+    mAlertBuilder = new AlertDialog.Builder(this);
+    if (core == null) {
+      if (Intent.ACTION_MAIN.equals(intent.getAction())){
+        this.finish();
+        System.exit(0);
+        return;
+      }
+      byte buffer[] = null;
+      if (Intent.ACTION_VIEW.equals(intent.getAction())) {
+        Uri uri = intent.getData();
+        Bundle extras = intent.getExtras();
+        if (extras != null && extras.containsKey("file_id")) {
+          String file_id = extras.getString("file_id");
+          SharedPreferences.Editor editor = sharedPreferences.edit();
+          editor.putString("tmpFileName", file_id);
+          editor.putLong("tmpOpenTime", System.currentTimeMillis());
+          editor.putLong("tmpSystemLast", SystemClock.uptimeMillis());
+          editor.commit();
+        }
+        //        System.out.println("URI to open is: " + uri);
+        if (uri.toString().startsWith("content://")) {
+          String reason = null;
+          try {
+            InputStream is = getContentResolver().openInputStream(uri);
+            int len = is.available();
+            buffer = new byte[len];
+            is.read(buffer, 0, len);
+            is.close();
+          } catch (OutOfMemoryError e) {
+            System.out.println("Out of memory during buffer reading");
+            reason = e.toString();
+          } catch (Exception e) {
+            System.out.println("Exception reading from stream: " + e);
+            // Handle view requests from the Transformer Prime's file manager
+            // Hopefully other file managers will use this same scheme, if not
+            // using explicit paths.
+            // I'm hoping that this case below is no longer needed...but it's
+            // hard to test as the file manager seems to have changed in 4.x.
+            try {
+              Cursor cursor =
+                  getContentResolver().query(uri, new String[] {"_data"}, null, null, null);
+              if (cursor.moveToFirst()) {
+                String str = cursor.getString(0);
+                if (str == null) {
+                  reason = "Couldn't parse data in intent";
+                } else {
+                  uri = Uri.parse(str);
+                }
+              }
+            } catch (Exception e2) {
+              System.out.println("Exception in Transformer Prime file manager code: " + e2);
+              reason = e2.toString();
+            }
+          }
+          if (reason != null) {
+            buffer = null;
+            Resources res = getResources();
+            AlertDialog alert = mAlertBuilder.create();
+            setTitle(String.format(res.getString(R.string.cannot_open_document_Reason), reason));
+            alert.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.dismiss),
+                new DialogInterface.OnClickListener() {
+                  public void onClick(DialogInterface dialog, int which) {
+                    finish();
+                  }
+                }
+            );
+            alert.show();
+            return;
+          }
+        }
+        if (buffer != null) {
+          core = openBuffer(buffer, intent.getType());
+        } else {
+          core = openFile(Uri.decode(uri.getEncodedPath()));
+        }
+        SearchTaskResult.set(null);
+      }
+      if (core != null && core.needsPassword()) {
+        return;
+      }
+      if (core != null && core.countPages() == 0) {
+        core = null;
+      }
+    }
+    if (core == null) {
+      AlertDialog alert = mAlertBuilder.create();
+      alert.setTitle(R.string.cannot_open_document);
+      alert.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.dismiss),
+          new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+              finish();
+            }
+          }
+      );
+      alert.setOnCancelListener(new OnCancelListener() {
+
+        @Override
+        public void onCancel(DialogInterface dialog) {
+          finish();
+        }
+      });
+      alert.show();
+      return;
+    }
+    createUI(null);
+  }
+
   /**
    * Called when the activity is first created.
    */
@@ -273,6 +384,9 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
     }
     if (core == null) {
       Intent intent = getIntent();
+      if (Intent.ACTION_MAIN.equals(intent.getAction())){
+        return;
+      }
       byte buffer[] = null;
       if (Intent.ACTION_VIEW.equals(intent.getAction())) {
         Uri uri = intent.getData();
@@ -285,7 +399,7 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
           editor.putLong("tmpSystemLast", SystemClock.uptimeMillis());
           editor.commit();
         }
-        System.out.println("URI to open is: " + uri);
+        //        System.out.println("URI to open is: " + uri);
         if (uri.toString().startsWith("content://")) {
           String reason = null;
           try {

@@ -6,7 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.graphics.RectF;
 import android.os.Handler;
-import com.cc.android.pdf.R;
+import com.krxkid.android.pdf.R;
 
 class ProgressDialogX extends ProgressDialog {
 	public ProgressDialogX(Context context) {

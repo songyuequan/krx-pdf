@@ -17,6 +17,7 @@
     <sign.alias>drivekeystore</sign.alias>
     <sign.storepass>retechcorp</sign.storepass>
     <sign.keypass>retechcorp</sign.keypass>
+    <guice.version>4.0-beta4</guice.version>
   </properties>
 
   <repositories>
@@ -49,6 +50,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>com.google.android</groupId>
+      <artifactId>support-v4</artifactId>
+      <version>r7</version>
+    </dependency>
+    <dependency>
       <groupId>com.goodow.realtime</groupId>
       <artifactId>realtime-android</artifactId>
       <version>0.5.5-SNAPSHOT</version>
@@ -67,6 +73,12 @@
           <artifactId>compatibility-v7-appcompat</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.google.inject</groupId>
+      <artifactId>guice</artifactId>
+      <version>${guice.version}</version>
+      <classifier>no_aop</classifier>
     </dependency>
   </dependencies>
   <build>

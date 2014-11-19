@@ -20,7 +20,7 @@ import android.os.FileObserver;
 import android.os.Handler;
 import android.view.View;
 import android.widget.ListView;
-import com.cc.android.pdf.R;
+import com.krxkid.android.pdf.R;
 
 enum Purpose {
 	PickPDF,

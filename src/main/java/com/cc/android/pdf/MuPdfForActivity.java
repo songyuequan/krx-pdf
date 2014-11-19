@@ -2,6 +2,7 @@ package com.cc.android.pdf;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
 import android.net.Uri;
@@ -92,6 +93,7 @@ public class MuPdfForActivity extends MuPDFActivity implements View.OnClickListe
       saveData();
       this.finish();
       finishMuPdfCore();
+      System.exit(0);
     }
     if (v.getId() == R.id.bt_pdf_pre_page) {
       bus.sendLocal(Constant.ADDR_PLAYER,
@@ -123,6 +125,7 @@ public class MuPdfForActivity extends MuPDFActivity implements View.OnClickListe
       saveData();
       finish();
       finishMuPdfCore();
+      System.exit(0);
     }
     return super.onKeyDown(keyCode, event);
   }
@@ -152,7 +155,6 @@ public class MuPdfForActivity extends MuPDFActivity implements View.OnClickListe
     long lastTime = SystemClock.uptimeMillis() - sharedPreferences.getLong("tmpSystemLast", -1);
     // 将数据插入
     if (lastTime > 5000 & !TextUtils.isEmpty(fileName)){
-      System.out.println("-------------");
       ContentValues values = new ContentValues();
       JsonObject jsonObject = Json.createObject().set("FILE_NAME", fileName).set("OPEN_TIME", openTime).set("LAST_TIME", lastTime);
       values.put(KEY_PLAY_DATA, jsonObject.toJsonString());
