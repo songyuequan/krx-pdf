@@ -17,6 +17,7 @@ import android.os.SystemClock;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.View;
@@ -261,9 +262,8 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
     sharedPreferences = this.getSharedPreferences("config", Context.MODE_PRIVATE);
     mAlertBuilder = new AlertDialog.Builder(this);
     if (core == null) {
-      if (Intent.ACTION_MAIN.equals(intent.getAction())){
+      if (Intent.ACTION_MAIN.equals(intent.getAction())) {
         this.finish();
-        System.exit(0);
         return;
       }
       byte buffer[] = null;
@@ -374,17 +374,16 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
     super.onCreate(savedInstanceState);
     sharedPreferences = this.getSharedPreferences("config", Context.MODE_PRIVATE);
     mAlertBuilder = new AlertDialog.Builder(this);
-
     if (core == null) {
       core = (MuPDFCore) getLastNonConfigurationInstance();
-
       if (savedInstanceState != null && savedInstanceState.containsKey("FileName")) {
         mFileName = savedInstanceState.getString("FileName");
       }
     }
     if (core == null) {
       Intent intent = getIntent();
-      if (Intent.ACTION_MAIN.equals(intent.getAction())){
+      // 直接点击开启
+      if (Intent.ACTION_MAIN.equals(intent.getAction())) {
         return;
       }
       byte buffer[] = null;
@@ -465,26 +464,26 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
         core = null;
       }
     }
-    if (core == null) {
-      AlertDialog alert = mAlertBuilder.create();
-      alert.setTitle(R.string.cannot_open_document);
-      alert.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.dismiss),
-          new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int which) {
-              finish();
-            }
-          }
-      );
-      alert.setOnCancelListener(new OnCancelListener() {
-
-        @Override
-        public void onCancel(DialogInterface dialog) {
-          finish();
-        }
-      });
-      alert.show();
-      return;
-    }
+//    if (core == null) {
+//      AlertDialog alert = mAlertBuilder.create();
+//      alert.setTitle(R.string.cannot_open_document);
+//      alert.setButton(AlertDialog.BUTTON_POSITIVE, getString(R.string.dismiss),
+//          new DialogInterface.OnClickListener() {
+//            public void onClick(DialogInterface dialog, int which) {
+//              finish();
+//            }
+//          }
+//      );
+//      alert.setOnCancelListener(new OnCancelListener() {
+//
+//        @Override
+//        public void onCancel(DialogInterface dialog) {
+//          finish();
+//        }
+//      });
+//      alert.show();
+//      return;
+//    }
 
     createUI(savedInstanceState);
   }
@@ -1382,6 +1381,7 @@ public class MuPDFActivity extends RoboActivity implements FilePicker.FilePicker
       destroyAlertWaiter();
       core.stopAlerts();
       core.onDestroy();
+      System.exit(0);
     }
     if (mAlertTask != null) {
       mAlertTask.cancel(true);
