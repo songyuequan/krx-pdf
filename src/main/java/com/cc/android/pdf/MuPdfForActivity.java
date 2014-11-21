@@ -93,7 +93,7 @@ public class MuPdfForActivity extends MuPDFActivity implements View.OnClickListe
       saveData();
       this.finish();
       finishMuPdfCore();
-      System.exit(0);
+//      System.exit(0);
     }
     if (v.getId() == R.id.bt_pdf_pre_page) {
       bus.sendLocal(Constant.ADDR_PLAYER,
@@ -125,7 +125,7 @@ public class MuPdfForActivity extends MuPDFActivity implements View.OnClickListe
       saveData();
       finish();
       finishMuPdfCore();
-      System.exit(0);
+//      System.exit(0);
     }
     return super.onKeyDown(keyCode, event);
   }
